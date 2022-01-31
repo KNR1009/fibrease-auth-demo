@@ -8,6 +8,31 @@ const userState = atom<User>({
   default: null,
 });
 
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+} from "firebase/firestore";
+
+// ログインユーザーの情報をfirestoreに登録
+async function createUserIfNotFound(user: User) {
+  const db = getFirestore();
+
+  const usersCollection = collection(db, "users");
+  const userRef = doc(usersCollection, user.uid);
+  const document = await getDoc(userRef);
+  if (document.exists()) {
+    // 書き込みの方が高いので！
+    return;
+  }
+
+  await setDoc(userRef, {
+    name: "taro" + new Date().getTime(),
+  });
+}
+
 export function useAuthentication() {
   // グローバルステートを定義
   const [user, setUser] = useRecoilState(userState);
@@ -29,10 +54,12 @@ export function useAuthentication() {
     onAuthStateChanged(auth, function (firebaseUser) {
       if (firebaseUser) {
         // 認証データをオブジェクトで格納
-        setUser({
+        const loginUser: User = {
           uid: firebaseUser.uid,
           isAnonymous: firebaseUser.isAnonymous,
-        });
+        };
+        setUser(loginUser);
+        createUserIfNotFound(loginUser);
       } else {
         // User is signed out.
         setUser(null);

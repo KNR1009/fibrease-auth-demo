@@ -1,4 +1,9 @@
-import { getAuth, onAuthStateChanged, signInAnonymously } from "firebase/auth";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInAnonymously,
+  User,
+} from "firebase/auth";
 
 function authenticate() {
   const auth = getAuth();
